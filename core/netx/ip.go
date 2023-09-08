@@ -9,6 +9,7 @@ func InternalIp() string {
 		return ""
 	}
 
+	var ip string
 	for _, inf := range infs {
 		if isEthDown(inf.Flags) || isLoopback(inf.Flags) {
 			continue
@@ -22,13 +23,20 @@ func InternalIp() string {
 		for _, addr := range addrs {
 			if ipnet, ok := addr.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
 				if ipnet.IP.To4() != nil {
-					return ipnet.IP.String()
+					// return ipnet.IP.String()
+					tmp := ipnet.IP.String()
+					if tmp[:3] == "192" {
+						// 优先使用192网段IP
+						return tmp
+					} else if len(ip) == 0 {
+						ip = tmp
+					}
 				}
 			}
 		}
 	}
 
-	return ""
+	return ip
 }
 
 func isEthDown(f net.Flags) bool {
